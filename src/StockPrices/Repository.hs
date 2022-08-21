@@ -23,30 +23,29 @@ retrieveTickerPrice :: Connection -> String -> Day -> IO (Maybe T.TickerHistory)
 retrieveTickerPrice conn tkr date = do
     xs <- query conn fetchQuery (tkr :: String, date :: Day)
     case xs of
-        []      -> return $ Nothing
+        []      -> return Nothing
         (x:[])  -> return $ Just x
 
-createTicker :: Connection -> T.TickerHistory -> IO (Int64)
+createTicker :: Connection -> T.TickerHistory -> IO Int64
 createTicker conn (T.TickerHistory t d a c h l o v) = do
-    x <- catchJust constraintViolation (execute conn insertQuery (t, d, a, c, h, l, o, v)) handler
-    return x
+    catchJust constraintViolation (execute conn insertQuery (t, d, a, c, h, l, o, v)) handler
   where
-    handler :: ConstraintViolation -> IO (Int64)
+    handler :: ConstraintViolation -> IO Int64
     handler (NotNullViolation a)      = do
-        print $ "Column can't be null" ++ (bsToStr a)
-        return $ (-1)
+        print $ concat ["Column can't be null", bsToStr a]
+        return (-1)
     handler (ForeignKeyViolation t c) = do
-        print $ concat ["FK violation in Table", (bsToStr t), "constraint: ", (bsToStr c) ]
-        return $ (-1)
+        print $ concat ["FK violation in Table", bsToStr t, "constraint: ", bsToStr c ]
+        return (-1)
     handler (UniqueViolation a)       = do
-        print $ concat ["UniqueViolation: ", (bsToStr a)]
-        return $ (-1)
+        print $ concat ["UniqueViolation: ", bsToStr a]
+        return (-1)
     handler (CheckViolation t c)      = do
-        print $ concat ["Check violation in Table", (bsToStr t), "constraint: ", (bsToStr c) ]
-        return $ (-1)
+        print $ concat ["Check violation in Table", bsToStr t, "constraint: ", bsToStr c ]
+        return (-1)
     handler (ExclusionViolation a)    = do
-        print $ "Excelution violation: " ++ (bsToStr a)
-        return $ (-1)
+        print $ concat ["Excelution violation: ", bsToStr a]
+        return (-1)
 
 bsToStr :: BS.ByteString -> String
 bsToStr s = Tt.unpack $ decodeUtf8 s
