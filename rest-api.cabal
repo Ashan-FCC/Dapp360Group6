@@ -31,11 +31,11 @@ executable rest-api
                     StockPrices.Database,
                     StockPrices.Environment,
                     StockPrices.Model.TickerHistory
-
+                    StockPrices.Api
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
-    build-depends:    base ^>=4.13.0.0,
+    build-depends:    base,
                       aeson,
                       containers,
                       mtl,
