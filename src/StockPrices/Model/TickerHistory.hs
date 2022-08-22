@@ -16,6 +16,6 @@ data TickerHistory = TickerHistory {
         closeP          :: Double,
         adjustedClose   :: Double,
         volume          :: Double,
-        date            :: Day
+        date            :: T.Text
     } deriving (Generic, FromRow, Show)
 

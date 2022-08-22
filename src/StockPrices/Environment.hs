@@ -28,7 +28,7 @@ readConfig = do
    db   <- lookupEnv "DB_NAME"
    case (host, port, user, pw, db) of
     (Just dbhost, Just dbport, Just dbuser, Just dbpw, Just dbname) -> return $ Config dbhost (convertPort dbport) dbuser dbpw dbname
-    (Nothing, Nothing, Nothing, Nothing, Nothing)                   -> return $ Config "0.0.0.0" (convertPort "5433") "postgres" "postgres" "stock_prices"
+    (Nothing, Nothing, Nothing, Nothing, Nothing)                   -> return $ Config "127.0.0.1" (convertPort "5433") "postgres" "postgres" "stock_prices"
     (Nothing, _, _, _, _)                                           -> error "DB_HOST env. variable is not set"
     (_, Nothing, _, _, _)                                           -> error "DB_PORT env. variable is not set"
     (_, _, Nothing, _, _)                                           -> error "DB_USER env. variable is not set"

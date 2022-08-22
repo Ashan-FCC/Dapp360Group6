@@ -31,7 +31,6 @@ executable rest-api
                     StockPrices.Database,
                     StockPrices.Environment,
                     StockPrices.Model.TickerHistory
-                    StockPrices.Api
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -44,7 +43,10 @@ executable rest-api
                       postgresql-simple,
                       time,
                       transformers,
-                      bytestring
+                      bytestring,
+                      wreq >=0.5.3.3,
+                      lens,
+                      http-types
 
     hs-source-dirs:   app,
                       src

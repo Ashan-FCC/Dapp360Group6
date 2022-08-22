@@ -6,7 +6,7 @@ import Data.Text.Encoding
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.Errors
 import Database.PostgreSQL.Simple.Internal
-import qualified StockPrices.Model.TickerHistory as T
+import StockPrices.Model.YahooQuote
 import qualified Data.ByteString as BS
 import Data.Time
 import GHC.Int
@@ -14,21 +14,21 @@ import Control.Exception
 import Database.PostgreSQL.Simple.Internal
 
 fetchQuery :: Query
-fetchQuery = "SELECT ticker, close, open, low, high, adj_close, volume, date from dbo.ticker_history where ticker = ? and date = ?"
+fetchQuery = "SELECT date, open, high, low, close, volume, adj_close from dbo.ticker_history where ticker = ? and date = ?"
 
 insertQuery :: Query
 insertQuery = "INSERT into dbo.ticker_history (ticker, open, high, low, close, adj_close, volume, date) values (?, ?, ?, ?, ?, ?, ?, ?)"
 
-retrieveTickerPrice :: Connection -> String -> Day -> IO (Maybe T.TickerHistory)
+retrieveTickerPrice :: Connection -> String -> Day -> IO (Maybe YahooQuote)
 retrieveTickerPrice conn tkr date = do
     xs <- query conn fetchQuery (tkr :: String, date :: Day)
     case xs of
         []      -> return Nothing
         (x:[])  -> return $ Just x
 
-createTicker :: Connection -> T.TickerHistory -> IO Int64
-createTicker conn (T.TickerHistory t d a c h l o v) = do
-    catchJust constraintViolation (execute conn insertQuery (t, d, a, c, h, l, o, v)) handler
+createTicker :: Connection -> Tt.Text -> YahooQuote -> IO Int64
+createTicker conn t (YahooQuote d o h l c v a) = do
+    catchJust constraintViolation (execute conn insertQuery (t, o, h, l, c, a, v, d)) handler
   where
     handler :: ConstraintViolation -> IO Int64
     handler (NotNullViolation a)      = do

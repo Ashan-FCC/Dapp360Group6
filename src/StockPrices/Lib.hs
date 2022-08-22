@@ -1,15 +1,11 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, DeriveGeneric, DeriveAnyClass #-}
 
-module Lib
-  ( getProduct,
-    getProducts,
-    createProduct,
-    updateProduct,
-    deleteProduct,
-  )
+module StockPrices.Lib
+  ( getQuote)
 where
 
 import Control.Monad.IO.Class (liftIO)
+import GHC.Generics (Generic)
 import Data.Aeson
 import Data.Int
 import Database.PostgreSQL.Simple
@@ -17,17 +13,26 @@ import Database.PostgreSQL.Simple.FromRow
 import Network.HTTP.Types.Status (Status, status200, status201, status204, status400)
 import Web.Scotty (ActionM, jsonData, param, post, status, text)
 import qualified Web.Scotty as S
+import StockPrices.YahooApi (getStockPrice)
+import qualified StockPrices.Model.YahooQuote as Y
+import qualified Data.Text as T
+import StockPrices.Model.TickerHistory (TickerHistory(..))
 
+import StockPrices.Repository (retrieveTickerPrice, createTicker)
+import Data.Time
+
+{-
 data Quote = Quote {
-  ticker :: Text,
-  date :: Text,
-  open :: Float,
-  high :: Float ,
-  low :: Float ,
-  close :: Float ,
-  volume :: Float ,
-  adjClose :: Float 
-}
+  ticker          :: T.Text,
+  open            :: Double,
+  high            :: Double,
+  low             :: Double,
+  closeP          :: Double,
+  adjustedClose   :: Double,
+  volume          :: Double,
+  date            :: T.Text
+} deriving (Generic, FromRow, FromJSON, ToJSON)
+
 
 instance FromRow Quote where
     fromRow = Quote <$> filed <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*>
@@ -56,21 +61,22 @@ instance ToJSON Quote where
           "volume"   .= volume,
           "adjClose" .= adjClose,
         ]
+-}
 
-getQuote :: Connection -> ActionM ()
-getQuote conn = do
-  _ticker <- param "ticker" :: ActionM Str 
-  _date   <- param "date"   :: ActionM Str
-  let result = retrieveTickerPrice conn _ticker _date 
-  quote <- liftIO result :: ActionM [Quote]
+getQuote :: T.Text -> T.Text -> Connection -> ActionM ()
+getQuote _ticker _date conn = do
+  let result = retrieveTickerPrice conn (T.unpack _ticker) (getDay . T.unpack $ _date)
+  quote <- liftIO result :: ActionM (Maybe Y.YahooQuote)
   case quote of
-    [] -> do
+    Nothing -> do
         status status400
-        S.json $ object ["error" .= ("Product not found" :: String)]
-        let api getStockPrice _ticker _date
-        quote <- liftIO api :: ActionM [Quote]
-        createTicker conn quote 
-        S.json (head api)
-    _  -> do
+        resp <- liftIO (getStockPrice _ticker _date) :: ActionM (Y.YahooQuote)
+        _ <- liftIO (createTicker conn _ticker resp) :: ActionM (Int64)
+        S.json resp
+    Just q  -> do
         status status200
-        S.json (head quote)
+        S.json q
+
+
+getDay :: String -> Day
+getDay s = parseTimeOrError False defaultTimeLocale "%Y-%m-%d" s :: Day
