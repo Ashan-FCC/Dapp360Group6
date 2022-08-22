@@ -27,10 +27,15 @@ executable rest-api
 
     -- Modules included in this executable, other than Main.
     other-modules:  StockPrices.App,
-                    StockPrices.Repository,
                     StockPrices.Database,
+                    StockPrices.DateHelper,
                     StockPrices.Environment,
-                    StockPrices.Model.TickerHistory
+                    StockPrices.Lib,
+                    StockPrices.Model.TranslateRsponse,
+                    StockPrices.Model.YahooQuote,
+                    StockPrices.Repository,
+                    StockPrices.YahooApi
+
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

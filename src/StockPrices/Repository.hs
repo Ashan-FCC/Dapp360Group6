@@ -8,10 +8,11 @@ import Database.PostgreSQL.Simple.Errors
 import Database.PostgreSQL.Simple.Internal
 import StockPrices.Model.YahooQuote
 import qualified Data.ByteString as BS
-import Data.Time
+import StockPrices.DateHelper (getDay)
 import GHC.Int
 import Control.Exception
 import Database.PostgreSQL.Simple.Internal
+import Data.Time
 
 fetchQuery :: Query
 fetchQuery = "SELECT date, open, high, low, close, volume, adj_close from dbo.ticker_history where ticker = ? and date = ?"
@@ -28,7 +29,7 @@ retrieveTickerPrice conn tkr date = do
 
 createTicker :: Connection -> Tt.Text -> YahooQuote -> IO Int64
 createTicker conn t (YahooQuote d o h l c v a) = do
-    catchJust constraintViolation (execute conn insertQuery (t, o, h, l, c, a, v, d)) handler
+  catchJust constraintViolation (execute conn insertQuery (t, o, h, l, c, a, v, d)) handler
   where
     handler :: ConstraintViolation -> IO Int64
     handler (NotNullViolation a)      = do
