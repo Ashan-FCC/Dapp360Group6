@@ -29,13 +29,25 @@ getQuote _ticker _date conn = do
         resp <- liftIO (getStockPrice _ticker _date) :: ActionM (Maybe YahooQuote)
         case resp of
           Just r -> do
-            _ <- liftIO (createTicker conn _ticker r) :: ActionM Int64
-            status status200
-            S.json r
-          Nothing -> do
-            status status400
-            S.json (ApiError ["Ticker Not Found: " ++ T.unpack _ticker])
-    Just q  -> do
-        status status200
-        S.json q
+            let action | date r /= day = returnError _ticker _date
+                       | otherwise = insertDataAndReturn conn _ticker r
+            action
+          Nothing -> returnError  _ticker _date
+    Just q  -> returnSuccess q
+
+insertDataAndReturn :: Connection -> T.Text -> YahooQuote -> ActionM ()
+insertDataAndReturn conn ticker r = do
+  _ <- liftIO (createTicker conn ticker r) :: ActionM Int64
+  returnSuccess r
+
+returnError :: T.Text -> T.Text -> ActionM ()
+returnError t d = do
+  status status400
+  S.json (ApiError ["Ticker Not Found: " ++ T.unpack t ++ ", for date: " ++ T.unpack d])
+
+returnSuccess :: YahooQuote -> ActionM ()
+returnSuccess q = do
+  status status200
+  S.json q
+
 

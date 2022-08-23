@@ -24,7 +24,7 @@ getStockPrice stockSymbol stockDate = do
   case status of
     200 -> do
       jsonResponse <- asJSON response
-      pure( Just (head(results (jsonResponse ^. responseBody))))
+      pure (Just (head (results (jsonResponse ^. responseBody))))
     _ -> return Nothing
 
 
