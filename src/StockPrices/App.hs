@@ -8,6 +8,7 @@ import Database.PostgreSQL.Simple
 import Data.Time
 import qualified Data.Text as T
 import qualified Web.Scotty as S
+import Data.Char
 
 import StockPrices.Repository (retrieveTickerPrice, createTicker)
 import StockPrices.Database (getDbConnection)
@@ -32,7 +33,7 @@ routes conn = scotty 8080 $ do
       Just err -> do
         status status400
         S.json err
-      _ -> getQuote _ticker _date conn
+      _ -> getQuote (mapToUpper _ticker) _date conn
 
 
 validateInput :: T.Text -> T.Text -> Maybe ApiError
@@ -42,5 +43,7 @@ validateInput t d = do
     Nothing -> Just (ApiError ["Date should be in YYYY-mm-dd format"])
     _       -> Nothing
 
+mapToUpper :: T.Text -> T.Text
+mapToUpper t = T.pack (map toUpper (T.unpack t))
 
 
