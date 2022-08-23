@@ -19,9 +19,8 @@ data YahooQuote = YahooQuote {
  volume :: Double ,
  adjClose :: Double
 }
- deriving (Show,Generic, ToJSON)
+ deriving (Show,Generic, ToJSON, FromJSON)
 
-instance FromJSON YahooQuote
 instance FromRow YahooQuote where
     fromRow = do
         date  <- field

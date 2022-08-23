@@ -2,5 +2,5 @@ module StockPrices.DateHelper where
 
 import Data.Time
 
-getDay :: String -> Day
-getDay s = parseTimeOrError False defaultTimeLocale "%Y-%m-%d" s :: Day
+getDay :: String -> Maybe Day
+getDay s = parseTimeM False defaultTimeLocale "%Y-%m-%d" s :: Maybe Day

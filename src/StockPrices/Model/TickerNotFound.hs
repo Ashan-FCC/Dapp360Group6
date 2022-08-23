@@ -5,4 +5,4 @@ module StockPrices.Model.TickerNotFound where
 import Data.Aeson
 import GHC.Generics (Generic)
 
-data TickerNotFound = TickerNotFound String deriving (Generic, Show, ToJSON)
+newtype TickerNotFound = TickerNotFound String deriving (Generic, Show, ToJSON)

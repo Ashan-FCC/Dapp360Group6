@@ -34,7 +34,8 @@ executable rest-api
                     StockPrices.Model.TranslateRsponse,
                     StockPrices.Model.YahooQuote,
                     StockPrices.Repository,
-                    StockPrices.YahooApi
+                    StockPrices.YahooApi,
+                    StockPrices.Model.ApiError
 
 
     -- LANGUAGE extensions used by modules in this package.
