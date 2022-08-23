@@ -11,7 +11,6 @@ import qualified Data.ByteString as BS
 import StockPrices.DateHelper (getDay)
 import GHC.Int
 import Control.Exception
-import Database.PostgreSQL.Simple.Internal
 import Data.Time
 
 fetchQuery :: Query
@@ -24,8 +23,8 @@ retrieveTickerPrice :: Connection -> String -> Day -> IO (Maybe YahooQuote)
 retrieveTickerPrice conn tkr date = do
     xs <- query conn fetchQuery (tkr :: String, date :: Day)
     case xs of
-        []      -> return Nothing
-        (x:[])  -> return $ Just x
+        []   -> return Nothing
+        [x]  -> return $ Just x
 
 createTicker :: Connection -> Tt.Text -> YahooQuote -> IO Int64
 createTicker conn t (YahooQuote d o h l c v a) = do
@@ -33,19 +32,19 @@ createTicker conn t (YahooQuote d o h l c v a) = do
   where
     handler :: ConstraintViolation -> IO Int64
     handler (NotNullViolation a)      = do
-        print $ concat ["Column can't be null", bsToStr a]
+        print ("Column can't be null" ++ bsToStr a)
         return (-1)
     handler (ForeignKeyViolation t c) = do
         print $ concat ["FK violation in Table", bsToStr t, "constraint: ", bsToStr c ]
         return (-1)
     handler (UniqueViolation a)       = do
-        print $ concat ["UniqueViolation: ", bsToStr a]
+        print ("UniqueViolation: " ++ bsToStr a)
         return (-1)
     handler (CheckViolation t c)      = do
         print $ concat ["Check violation in Table", bsToStr t, "constraint: ", bsToStr c ]
         return (-1)
     handler (ExclusionViolation a)    = do
-        print $ concat ["Excelution violation: ", bsToStr a]
+        print ("Excelution violation: " ++ bsToStr a)
         return (-1)
 
 bsToStr :: BS.ByteString -> String

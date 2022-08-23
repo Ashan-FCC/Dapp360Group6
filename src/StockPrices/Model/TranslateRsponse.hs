@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric, OverloadedStrings  #-}
+{-# LANGUAGE DeriveGeneric #-}
 module StockPrices.Model.TranslateRsponse where
 
 import Data.Aeson

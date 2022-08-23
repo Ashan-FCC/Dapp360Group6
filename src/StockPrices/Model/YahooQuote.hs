@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass, OverloadedStrings  #-}
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass  #-}
 
 module StockPrices.Model.YahooQuote where
 
