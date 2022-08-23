@@ -2,15 +2,19 @@
 {-# LANGUAGE ScopedTypeVariables  #-}
 module StockPrices.App (runApp) where
 
+import Network.HTTP.Types.Status (Status, status200, status400)
+import Web.Scotty (ActionM, get, scotty, param, status)
+import Database.PostgreSQL.Simple
+import Data.Time
+import qualified Data.Text as T
+import qualified Web.Scotty as S
+
 import StockPrices.Repository (retrieveTickerPrice, createTicker)
 import StockPrices.Database (getDbConnection)
 import StockPrices.Environment (readConfig)
-import StockPrices.Model.TickerHistory (TickerHistory(..))
-import Data.Time
 import StockPrices.Lib (getQuote)
-import Web.Scotty (ActionM, delete, get, post, put, scotty, param)
-import Database.PostgreSQL.Simple
-import qualified Data.Text as T
+import StockPrices.DateHelper (getDay)
+import StockPrices.Model.ApiError (ApiError(..))
 
 runApp :: IO ()
 runApp = do
@@ -23,14 +27,20 @@ routes conn = scotty 8080 $ do
   get "/api/getprice/:ticker/:date" $ do
     _ticker <- param "ticker" :: ActionM T.Text
     _date   <- param "date"   :: ActionM T.Text
-    getQuote _ticker _date conn
+    let invalidInput = validateInput _ticker _date
+    case invalidInput of
+      Just err -> do
+        status status400
+        S.json err
+      _ -> getQuote _ticker _date conn
 
 
-  {-xs     <- createTicker conn (TickerHistory { ticker = "AAPL", date = getDay "2022-08-12",  adjustedClose = 100,   closeP = 1000,   high = 1001,  low = 989,   open = 990,   volume = 10000 })
-  res    <- retrieveTickerPrice conn "NFLX" (getDay "2022-08-15")
-  print res
-  -}
-
+validateInput :: T.Text -> T.Text -> Maybe ApiError
+validateInput t d = do
+  let day = getDay . T.unpack $ d
+  case day of
+    Nothing -> Just (ApiError ["Date should be in YYYY-mm-dd format"])
+    _       -> Nothing
 
 
 
