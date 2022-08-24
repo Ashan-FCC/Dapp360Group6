@@ -33,7 +33,8 @@ getQuote _ticker _date conn = do
                        | otherwise = insertDataAndReturn conn _ticker r
             action
           Nothing -> returnError  _ticker _date
-    Just q  -> returnSuccess q
+    Just q  -> do
+      returnSuccess q
 
 insertDataAndReturn :: Connection -> T.Text -> YahooQuote -> ActionM ()
 insertDataAndReturn conn ticker r = do
