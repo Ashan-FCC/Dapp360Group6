@@ -24,7 +24,9 @@ retrieveTickerPrice conn tkr date = do
     xs <- query conn fetchQuery (tkr :: String, date :: Day)
     case xs of
         []   -> return Nothing
-        [x]  -> return $ Just x
+        [x]  -> do
+          print ("Data from DB: " ++ tkr)
+          return $ Just x
 
 createTicker :: Connection -> Tt.Text -> YahooQuote -> IO Int64
 createTicker conn t (YahooQuote d o h l c v a) = do
